@@ -1,6 +1,7 @@
 # main.py
 from instruments.instrument_factory import instrument_factory
 from experiments.run_experiment import run_experiment
+from experiments.pulsed_measurement import pulsed_measurement_experiment
 
 # Example usage
 if __name__ == "__main__":
@@ -9,8 +10,4 @@ if __name__ == "__main__":
 
     run_experiment(instrument_2400)
     run_experiment(instrument_2450)
-
-
-
-
-
+    pulsed_measurement_experiment()
