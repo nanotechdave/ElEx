@@ -1,12 +1,12 @@
 # keithley6430.py
 from .instrument_base import Instrument
-from connections.keithley_communication import Communications
+from connections.keithley_communication import KeithleyCommunications
 from utils.functions_pulsing import numSearch, fileInit, fileUpdate, dataInit
 
 class Keithley6430(Instrument):
     def __init__(self, address):
         # Set up communication for the Keithley 6430
-        self.connection = Communications(address)
+        self.connection = KeithleyCommunications(address)
     
     def read_voltage(self):
         # Device-specific command for reading voltage

@@ -1,11 +1,11 @@
 # keithley4200.py
 from .instrument_base import Instrument
-from connections.keithley4200_communication import Keithley4200Communications
+from connections.keithley_communication import KeithleyCommunications
 from utils.functions_pulsing import numSearch, fileInit, fileUpdate, dataInit
 
 class Keithley4200(Instrument):
     def __init__(self, address):
-        self.connection = Keithley4200Communications(address)
+        self.connection = KeithleyCommunications(address)
     
     def read_voltage(self):
         return self.connection.send_command("MEAS:VOLT?")

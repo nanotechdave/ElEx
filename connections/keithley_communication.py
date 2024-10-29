@@ -2,7 +2,7 @@
 import pyvisa as visa
 import pyvisa.constants as pyconst
 
-class Keithley4200Communications:
+class KeithleyCommunications:
     """This class offers a collection of wrapper methods for PyVisa communication."""
     
     def __init__(self, address):
