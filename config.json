@@ -1,0 +1,15 @@
+{
+    "instrument": {
+      "model": "Keithley6430",
+      "address": "GPIB::30",
+      "protocol": "GPIB"
+    },
+    "experiment": {
+      "pulse_width": 0.5,
+      "pulse_delay": 0.1,
+      "num_pulses": 10,
+      "savepath": "01_Raw_data/pulsing/Sample1",
+      "measurement_name": "sample_measurement"
+    }
+  }
+  
