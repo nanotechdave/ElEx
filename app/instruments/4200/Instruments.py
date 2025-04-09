@@ -1703,40 +1703,41 @@ class Keithley4200:
         self.ax1.set_ylabel(self.plotLabels['ylabel'][0])
         self.ax1.set_title(self.plotLabels['Title'][0])
         self.ax1.set_xlabel(self.plotLabels['xlabel'][0])  
-        self.ax1.plot(self.data[self.plotLabels['xlabel'][0]],self.data[self.plotLabels['ylabel'][0]])
+        self.ax1.plot(self.data[self.plotLabels['xlabel'][0]],self.data[self.plotLabels['ylabel'][0]],color='k')
 
         self.plot2, = self.ax2.plot(0,0)
         self.ax2.set_ylabel(self.plotLabels['ylabel'][1])
         self.ax2.set_title(self.plotLabels['Title'][1])
         self.ax2.set_xlabel(self.plotLabels['xlabel'][1]) 
-        self.ax2.plot(self.data[self.plotLabels['xlabel'][1]],self.data[self.plotLabels['ylabel'][1]])
+        self.ax2.plot(self.data[self.plotLabels['xlabel'][1]],self.data[self.plotLabels['ylabel'][1]],color='k')
 
         self.plot3, = self.ax3.plot(0,0)
         self.ax3.set_ylabel(self.plotLabels['ylabel'][2])
         self.ax3.set_title(self.plotLabels['Title'][2])
         self.ax3.set_xlabel(self.plotLabels['xlabel'][2])
-        self.ax3.plot(self.data[self.plotLabels['xlabel'][2]],self.data[self.plotLabels['ylabel'][2]])
+        self.ax3.plot(self.data[self.plotLabels['xlabel'][2]],self.data[self.plotLabels['ylabel'][2]],color='k')
 
         self.plot4, = self.ax4.plot(0,0)
         self.ax4.set_ylabel(self.plotLabels['ylabel'][3])
         self.ax4.set_title(self.plotLabels['Title'][3])
         self.ax4.set_xlabel(self.plotLabels['xlabel'][3])
-        self.ax4.plot(self.data[self.plotLabels['xlabel'][3]],self.data[self.plotLabels['ylabel'][3]])
+        self.ax4.plot(self.data[self.plotLabels['xlabel'][3]],self.data[self.plotLabels['ylabel'][3]],color='k')
 
         self.ax5 = self.ax1.twinx()
         self.ax5.set_ylabel(self.plotLabels['ylabelr'][0], color='r')
         self.ax5.tick_params(axis='y', labelcolor='r')
-        self.ax5.plot(self.data[self.plotLabels['xlabel'][0]],self.data[self.plotLabels['ylabelr'][0]])
+        self.ax5.plot(self.data[self.plotLabels['xlabel'][0]],self.data[self.plotLabels['ylabelr'][0]],color='r')
 
         self.ax6 = self.ax2.twinx()
         self.ax6.set_ylabel(self.plotLabels['ylabelr'][1], color='r')
         self.ax6.tick_params(axis='y', labelcolor='r')
-        self.ax6.plot(self.data[self.plotLabels['xlabel'][0]],self.data[self.plotLabels['ylabelr'][1]])
+        self.ax6.plot(self.data[self.plotLabels['xlabel'][0]],self.data[self.plotLabels['ylabelr'][1]],color='r')
 
         self.ax7 = self.ax3.twinx()
         self.ax7.set_ylabel(self.plotLabels['ylabelr'][2], color='r')
         self.ax7.tick_params(axis='y', labelcolor='r')
-        self.ax7.plot(self.data[self.plotLabels['xlabel'][0]],self.data[self.plotLabels['ylabelr'][2]]) 
+        self.ax7.plot(self.data[self.plotLabels['xlabel'][0]],self.data[self.plotLabels['ylabelr'][2]],color='r') 
+        plt.tight_layout()
         plt.show()     
 
         return
@@ -1773,7 +1774,7 @@ class Keithley4200:
     
     
     def saveData(self):        
-        self.data.to_csv(f"{self.fileName}.txt",sep = ' ',index = False)  
+        self.data.to_csv(f"{self.fileName}.txt",sep = ' ',index = False,na_rep="NaN")  
         return
     
         

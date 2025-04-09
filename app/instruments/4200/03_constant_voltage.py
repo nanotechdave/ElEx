@@ -22,7 +22,7 @@ def main(args=None):
     lab = 'INRiM6430'       # Lab and instrument of measurement execution
     
     v_read = 0.5             # Applied voltage [V]
-    t_read = 200              # Application time [s]
+    t_read = 10              # Application time [s]
     t_step_read = 0.2       # Time step between read points [s] (min 0.2)
     i_range_read = 1e-5      # SMU current range [A] (0 = autorange)
     i_cc_read = 1e-5         # compliance current [A] 
