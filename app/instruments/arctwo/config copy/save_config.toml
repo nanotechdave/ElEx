@@ -1,0 +1,6 @@
+#savepath configuration
+
+savepath = "C:/Users/NM_Janis-ST100H/Desktop/Davide/ARC"
+lab = "INRiMJanis"
+sample = "NWN_Pad239D"
+cell = "gridSE"
