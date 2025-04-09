@@ -19,6 +19,7 @@ import os
 import cv2
 from moviepy import VideoFileClip
 import mss
+from typing import Tuple, Dict, Any, List, Optional, Union
 
 
 class Keithley6430:
@@ -1358,8 +1359,8 @@ class Keithley4200:
     
     G0 = 7.74809173e-5
     
-    def __init__(self, address = "GPIB0::3::INSTR"):
-        self.address = address
+    def __init__(self, address: str = "GPIB0::3::INSTR"):
+        self.address: str = address
         
         self.sample = "NWN_Pad68C"
         self.cell = 'N3S3'
@@ -1805,7 +1806,7 @@ class Keithley4200:
         self.data['Time[s]'] = df_all_channels_1['Timestamp'].astype(float)
         self.data['Voltage_read[V]'] = df_all_channels_1['Voltage'].astype(float)
         self.data['Current[A]'] = -df_all_channels_2['Current'].astype(float)
-
+        self.data[['Temperature[K]','TargetTemperature[K]']] = np.nan
         dT = np.mean(np.diff(self.data['Time[s]']))
         voltage_single_seq = []
         for seg_time, start_v, stop_v in zip(self.SEGTIME_vector, self.STARTV_1_vector, self.STOPV_1_vector):
