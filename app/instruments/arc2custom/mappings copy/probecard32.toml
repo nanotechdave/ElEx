@@ -1,0 +1,23 @@
+[config]
+# number of total word- and bitlines
+name = "64-pin probecard"
+words = 32
+bits = 32
+
+[mapping]
+# corresponding channels for wordlines
+words = [
+    17, 63, 16, 62, 19, 61, 18, 60,
+    21, 59, 20, 58, 23, 57, 22, 56,
+    24, 54, 25, 55, 26, 52, 27, 53,
+    28, 50, 29, 51, 30, 48, 31, 49
+]
+
+# corresponding channels for bitlines
+bits = [
+    15, 33, 14, 32, 13, 35, 12, 34,
+    11, 37, 10, 36,  9, 39,  8, 38,
+     6, 40,  7, 41,  4, 42,  5, 43,
+     2, 44,  3, 45,  0, 46,  1, 47
+]
+
