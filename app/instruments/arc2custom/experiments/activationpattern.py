@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from datetime import date, datetime
+from pathlib import Path
 
 import numpy as np
 import pyarc2
@@ -41,6 +42,24 @@ class ActivationPattern(Experiment):
         
         # Activation sequence
         self.electrode_sequence = []
+        
+        # Set default mapping
+        self.mapping_file = "grid_fix16.toml"
+        # Load the mapping if not already loaded in session
+        self.ensure_mapping_loaded()
+
+    def ensure_mapping_loaded(self):
+        """Ensure the correct mapping is loaded in the session"""
+        if not self.session.useDbMap or self.session.mapping_file != self.mapping_file:
+            # Get the path to the mappings directory
+            mapping_path = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))) / "mappings" / self.mapping_file
+            print(f"Loading electrode mapping from: {mapping_path}")
+            
+            # Load the mapping
+            self.session.mapping = dp.load_channel_map(str(mapping_path))
+            self.session.mapping_file = self.mapping_file
+            self.session.useDbMap = True
+            print(f"Mapping loaded successfully: {self.mapping_file}")
 
     def setMeasurement(
         self,
@@ -52,6 +71,7 @@ class ActivationPattern(Experiment):
         g_interval: float = 0.5,
         g_points: int = 10,
         float_at_end: bool = True,
+        mapping_file: str = "grid_fix16.toml"
     ):
         """
         Set measurement parameters and open the GUI to get the electrode sequence
@@ -65,6 +85,11 @@ class ActivationPattern(Experiment):
         self.g_interval = g_interval
         self.g_points = g_points
         self.float_at_end = float_at_end
+        
+        # Set mapping file if changed
+        if mapping_file != self.mapping_file:
+            self.mapping_file = mapping_file
+            self.ensure_mapping_loaded()
 
         # Get electrode sequence from GUI
         self.electrode_sequence = self.get_electrode_sequence()
@@ -74,6 +99,13 @@ class ActivationPattern(Experiment):
             return False
             
         print(f"Electrode sequence set: {self.electrode_sequence}")
+        
+        # Print the mapping for debugging
+        print("Electrode to ARC channel mapping:")
+        for electrode in self.electrode_sequence:
+            arc_channel = self.session.dbToArc(electrode)
+            print(f"  Electrode {electrode} → ARC channel {arc_channel}")
+            
         return True
         
     def get_electrode_sequence(self):
@@ -111,6 +143,7 @@ class ActivationPattern(Experiment):
         f.write(f"SAMPLE: {self.session.sample}\n")
         f.write(f"CELL: {self.session.cell}\n")
         f.write(f"EXPERIMENT: {self.name}, {self.script} script. \n\n")
+        f.write(f"MAPPING: {self.mapping_file}\n")
         if self.session.useDbMap:
             f.write(f"MAPPING of output file: Daughterboard\n")
         else:
@@ -194,9 +227,11 @@ class ActivationPattern(Experiment):
             
             print(f"Processing electrode pair: {bias_electrode} (bias) -> {gnd_electrode} (ground)")
             
-            # Convert from electrode number to ARC channels
+            # Convert from electrode number to ARC channels using the mapping
             bias_channel = self.session.dbToArc(bias_electrode)
             gnd_channel = self.session.dbToArc(gnd_electrode)
+            
+            print(f"  Mapped to ARC channels: {bias_channel} (bias) -> {gnd_channel} (ground)")
             
             # Set up the measurement settings for this pair
             self.setMaskSettings(
