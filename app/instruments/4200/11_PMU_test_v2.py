@@ -21,12 +21,13 @@ def main(args=None):
     savepath = "TestPMU"       # Folder name (automatically created if not existing)
     lab = 'INRiM4200'       # Lab and instrument of measurement execution
     
-    pulses_number = 3
+    pulses_number = 1
     v_bias_PMU = 0
     v_amp_PMU = 1
     period = 10e-6
-    pulse_width = period/2
     rising_time = period/50
+    pulse_width = (period-2*rising_time)/2
+    
 
     cycles = 1              # Number of measuring cycles
 
