@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Electrode Sequencer",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/app/gui/run_measurement_settings.py",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+} 
