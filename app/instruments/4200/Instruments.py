@@ -2524,7 +2524,7 @@ class Keithley4200:
         self.fileName = f"{self.savepath}/{str(self.startNum).zfill(3)}_{self.lab}_{self.sample}_{self.cell}_{self.script}_PMU_{self.date}"
 
         self.PMUSquareWaveGen()
-        self.PMUInit()
+        self.PMUInit()        
         self.PMUExecute()
         self.PMUGetData()
         self.PMUplot()

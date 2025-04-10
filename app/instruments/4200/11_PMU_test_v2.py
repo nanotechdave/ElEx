@@ -56,7 +56,7 @@ def main(args=None):
 # =============================================================================  
     
     for cNum in range(cycles):              
-        KT4200.PMUSquareWaveRun()    
+        KT4200.PMUSquareWaveRun()            
                 
     KT4200.closeSession()
     
