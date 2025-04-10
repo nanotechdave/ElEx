@@ -5,14 +5,14 @@ import os
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.insert(0, project_root)
 
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 from app.gui.measurement_settings_window import MeasurementSettingsWindow
 
 def main():
     app = QApplication(sys.argv)
     window = MeasurementSettingsWindow()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 if __name__ == '__main__':
     main() 

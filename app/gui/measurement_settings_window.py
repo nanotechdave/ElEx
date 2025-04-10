@@ -7,10 +7,10 @@ from pathlib import Path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 sys.path.insert(0, project_root)
 
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, 
+from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, 
                              QHBoxLayout, QLabel, QComboBox, QPushButton,
                              QInputDialog, QMessageBox)
-from PyQt5.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 from app.gui.electrode_matrix import ElectrodeMatrix
 
 class MeasurementSettingsWindow(QMainWindow):
@@ -92,8 +92,8 @@ class MeasurementSettingsWindow(QMainWindow):
             if name in self.patterns:
                 reply = QMessageBox.question(self, 'Confirm Overwrite',
                                           f'Pattern "{name}" already exists. Overwrite?',
-                                          QMessageBox.Yes | QMessageBox.No)
-                if reply == QMessageBox.No:
+                                          QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                if reply == QMessageBox.StandardButton.No:
                     return
                     
             self.patterns[name] = self.electrode_matrix.getSequence()

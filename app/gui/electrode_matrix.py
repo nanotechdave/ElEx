@@ -1,16 +1,20 @@
 import sys
 import os
 
-from PyQt5.QtWidgets import (QWidget, QGridLayout, QPushButton, 
+# Add the project root to Python path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+sys.path.insert(0, project_root)
+
+from PyQt6.QtWidgets import (QWidget, QGridLayout, QPushButton, 
                              QVBoxLayout, QLabel, QHBoxLayout)
-from PyQt5.QtCore import pyqtSignal, Qt, QPoint
-from PyQt5.QtGui import QPainter, QPen, QColor
+from PyQt6.QtCore import pyqtSignal, Qt, QPoint
+from PyQt6.QtGui import QPainter, QPen, QColor
 import numpy as np
 
 class ElectrodeMatrix(QWidget):
     # Signals
     sequenceChanged = pyqtSignal(list)
-    sequenceConfirmed = pyqtSignal(list)  # New signal for confirmed sequence
+    sequenceConfirmed = pyqtSignal(list)  # Signal for confirmed sequence
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -122,7 +126,7 @@ class ElectrodeMatrix(QWidget):
             return
             
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         
         # Set up pen for arrows
         pen = QPen(QColor(0, 0, 255))  # Blue color

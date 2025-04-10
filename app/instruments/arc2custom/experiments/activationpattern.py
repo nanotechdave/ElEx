@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 import pyarc2
 
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 from arc2custom import dparclib as dparc
 from arc2custom import dplib as dp
@@ -131,7 +131,7 @@ class ActivationPattern(Experiment):
         
         # Show the window and run the event loop
         window.show()
-        app.exec_()
+        app.exec()
         
         return sequence
 
