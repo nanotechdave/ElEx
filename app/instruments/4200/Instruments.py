@@ -1461,7 +1461,7 @@ class Keithley4200:
         self.v_amp_PMU = 2
         self.v_bias_PMU = 0
         self.i_range_PMU = 1e-3
-        self.seq1 = 1
+        self.last_sequence = 0
         
         
 # =============================================================================
@@ -1544,28 +1544,56 @@ class Keithley4200:
         return
     
     def PMUInit(self):
+        self.last_sequence += 1
+
         self.session.query(":PMU:INIT 1") #0 = Pulse mode, 1 = SegArb mode
 
         self.session.query(":PMU:RPM:CONFIGURE PMU1-1, 0") # 0 = PMU, 1 = CV_2W, 2 = SMU, 3 = CV_4W
         self.session.query(f":PMU:MEASURE:RANGE {self.ch_source}, 2, {self.i_range_PMU}") # set current range, 0 = Autorange, 1 = Limited Autorange (minimum range), 2 = Fixed range
-        self.session.query(f":PMU:SARB:SEQ:TIME {self.ch_source}, {self.seq1}, {self.SEGTIME}") # defines time sequence, Channel, sequence number (1 to 512), comma separated array of time segments (20 ns resolution)
-        self.session.query(f":PMU:SARB:SEQ:STARTV {self.ch_source}, {self.seq1}, {self.STARTV_1}")
-        self.session.query(f":PMU:SARB:SEQ:STOPV {self.ch_source}, {self.seq1}, {self.STOPV_1}")
-        self.session.query(f":PMU:SARB:SEQ:MEAS:TYPE {self.ch_source}, {self.seq1}, {self.MEASTYPE}") # 0 = No measurement, 1 = Spot Mean (1 sample for seg), 2 = Waveform disrete (more samples for pulse) 
-        self.session.query(f":PMU:SARB:SEQ:MEAS:START {self.ch_source}, {self.seq1}, {self.MEASSTART}") # set delay for measurement after segment start (0 for measuring all)
-        self.session.query(f":PMU:SARB:SEQ:MEAS:STOP {self.ch_source}, {self.seq1}, {self.MEASSTOP}") # set time of end measuring for each segment (set equal to SEGTIME)
+        self.session.query(f":PMU:SARB:SEQ:TIME {self.ch_source}, {self.last_sequence}, {self.SEGTIME}") # defines time sequence, Channel, sequence number (1 to 512), comma separated array of time segments (20 ns resolution)
+        self.session.query(f":PMU:SARB:SEQ:STARTV {self.ch_source}, {self.last_sequence}, {self.STARTV_1}")
+        self.session.query(f":PMU:SARB:SEQ:STOPV {self.ch_source}, {self.last_sequence}, {self.STOPV_1}")
+        self.session.query(f":PMU:SARB:SEQ:MEAS:TYPE {self.ch_source}, {self.last_sequence}, {self.MEASTYPE}") # 0 = No measurement, 1 = Spot Mean (1 sample for seg), 2 = Waveform disrete (more samples for pulse) 
+        self.session.query(f":PMU:SARB:SEQ:MEAS:START {self.ch_source}, {self.last_sequence}, {self.MEASSTART}") # set delay for measurement after segment start (0 for measuring all)
+        self.session.query(f":PMU:SARB:SEQ:MEAS:STOP {self.ch_source}, {self.last_sequence}, {self.MEASSTOP}") # set time of end measuring for each segment (set equal to SEGTIME)
         
         self.session.query(":PMU:RPM:CONFIGURE PMU1-2, 0") #Configure the RPM input for channel 2 of pulse card 1 to the PMU
         self.session.query(f":PMU:MEASURE:RANGE {self.ch_ground}, 2, {self.i_range_PMU}") #Set channel 2 for a fixed 1 mA current range
-        self.session.query(f":PMU:SARB:SEQ:TIME {self.ch_ground}, {self.seq1}, {self.SEGTIME}") #Use the same segment time as sequence 1 of channel 1 for sequence 1 of channel 2
-        self.session.query(f":PMU:SARB:SEQ:STARTV {self.ch_ground}, {self.seq1}, {self.STARTV_2}")
-        self.session.query(f":PMU:SARB:SEQ:STOPV {self.ch_ground}, {self.seq1}, {self.STOPV_2}") # set V all to 0?
-        self.session.query(f":PMU:SARB:SEQ:MEAS:TYPE {self.ch_ground}, {self.seq1}, {self.MEASTYPE}")
-        self.session.query(f":PMU:SARB:SEQ:MEAS:START {self.ch_ground}, {self.seq1}, {self.MEASSTART}")
-        self.session.query(f":PMU:SARB:SEQ:MEAS:STOP {self.ch_ground}, {self.seq1}, {self.MEASSTOP}")
+        self.session.query(f":PMU:SARB:SEQ:TIME {self.ch_ground}, {self.last_sequence}, {self.SEGTIME}") #Use the same segment time as sequence 1 of channel 1 for sequence 1 of channel 2
+        self.session.query(f":PMU:SARB:SEQ:STARTV {self.ch_ground}, {self.last_sequence}, {self.STARTV_2}")
+        self.session.query(f":PMU:SARB:SEQ:STOPV {self.ch_ground}, {self.last_sequence}, {self.STOPV_2}") # set V all to 0?
+        self.session.query(f":PMU:SARB:SEQ:MEAS:TYPE {self.ch_ground}, {self.last_sequence}, {self.MEASTYPE}")
+        self.session.query(f":PMU:SARB:SEQ:MEAS:START {self.ch_ground}, {self.last_sequence}, {self.MEASSTART}")
+        self.session.query(f":PMU:SARB:SEQ:MEAS:STOP {self.ch_ground}, {self.last_sequence}, {self.MEASSTOP}")
 
-        self.session.query(f":PMU:SARB:WFM:SEQ:LIST {self.ch_source}, {self.seq1}, {self.pulses_number}") # define for each sequence how many times is in output
-        self.session.query(f":PMU:SARB:WFM:SEQ:LIST {self.ch_ground}, {self.seq1}, {self.pulses_number}")
+        self.session.query(f":PMU:SARB:WFM:SEQ:LIST {self.ch_source}, {self.last_sequence}, {self.pulses_number}") # define for each sequence how many times is in output
+        self.session.query(f":PMU:SARB:WFM:SEQ:LIST {self.ch_ground}, {self.last_sequence}, {self.pulses_number}")
+
+    def PMUAddLastSequence(self):
+        self.last_sequence += 1
+
+        self.session.query(f":PMU:SARB:SEQ:TIME {self.ch_source}, {self.last_sequence}, {self.SEGTIME_last}") # defines time sequence, Channel, sequence number (1 to 512), comma separated array of time segments (20 ns resolution)
+        self.session.query(f":PMU:SARB:SEQ:STARTV {self.ch_source}, {self.last_sequence}, {self.STARTV_1_last}")
+        self.session.query(f":PMU:SARB:SEQ:STOPV {self.ch_source}, {self.last_sequence}, {self.STOPV_1_last}")
+        self.session.query(f":PMU:SARB:SEQ:MEAS:TYPE {self.ch_source}, {self.last_sequence}, {self.MEASTYPE_last}") # 0 = No measurement, 1 = Spot Mean (1 sample for seg), 2 = Waveform disrete (more samples for pulse) 
+        self.session.query(f":PMU:SARB:SEQ:MEAS:START {self.ch_source}, {self.last_sequence}, {self.MEASSTART_last}") # set delay for measurement after segment start (0 for measuring all)
+        self.session.query(f":PMU:SARB:SEQ:MEAS:STOP {self.ch_source}, {self.last_sequence}, {self.MEASSTOP_last}") # set time of end measuring for each segment (set equal to SEGTIME)
+
+        self.session.query(f":PMU:SARB:SEQ:TIME {self.ch_ground}, {self.last_sequence}, {self.SEGTIME_last}") #Use the same segment time as sequence 1 of channel 1 for sequence 1 of channel 2
+        self.session.query(f":PMU:SARB:SEQ:STARTV {self.ch_ground}, {self.last_sequence}, {self.STARTV_2_last}")
+        self.session.query(f":PMU:SARB:SEQ:STOPV {self.ch_ground}, {self.last_sequence}, {self.STOPV_2_last}") # set V all to 0?
+        self.session.query(f":PMU:SARB:SEQ:MEAS:TYPE {self.ch_ground}, {self.last_sequence}, {self.MEASTYPE_last}")
+        self.session.query(f":PMU:SARB:SEQ:MEAS:START {self.ch_ground}, {self.last_sequence}, {self.MEASSTART_last}")
+        self.session.query(f":PMU:SARB:SEQ:MEAS:STOP {self.ch_ground}, {self.last_sequence}, {self.MEASSTOP_last}")
+
+        self.session.query(f":PMU:SARB:WFM:SEQ:LIST:ADD {self.ch_source}, {self.last_sequence}, 1") # define for each sequence how many times is in output
+        self.session.query(f":PMU:SARB:WFM:SEQ:LIST:ADD {self.ch_ground}, {self.last_sequence}, 1")
+
+
+
+
+
+
 
     def PMUExecute(self):
         
@@ -1959,7 +1987,7 @@ class Keithley4200:
         self.tInPulse = np.linspace(0, self.t_step_pulse*(self.ptNumPulse), self.ptNumPulse)  
         return
     
-    def PMUSquareGen(self):
+    def PMUSquareWaveGen(self):
         self.v_high = self.v_bias_PMU + self.v_amp_PMU
         self.v_low = self.v_bias_PMU - self.v_amp_PMU
         self.SEGTIME_vector =  np.array([self.pulse_width if i % 2 == 0 else self.rising_time for i in range(self.seg_number)])
@@ -1973,6 +2001,19 @@ class Keithley4200:
         self.MEASSTOP = self.SEGTIME
         self.STARTV_2 = ", ".join(map(str, np.zeros(self.seg_number)))
         self.STOPV_2 = ", ".join(map(str, np.zeros(self.seg_number)))
+
+        self.SEGTIME_last = str(self.SEGTIME_vector[0])
+        self.STARTV_1_last = str(self.STARTV_1_vector[0])
+        self.STOPV_1_last = str(self.STOPV_1_vector[0])
+        self.MEASTYPE_last = str(2)
+        self.MEASSTART_last = str(0)
+        self.MEASSTOP_last = self.SEGTIME_last
+        self.STARTV_2_last = str(0)
+        self.STOPV_2_last = str(0)
+
+        
+
+        
 
     
     
@@ -2482,7 +2523,7 @@ class Keithley4200:
         self.numSearch()        
         self.fileName = f"{self.savepath}/{str(self.startNum).zfill(3)}_{self.lab}_{self.sample}_{self.cell}_{self.script}_PMU_{self.date}"
 
-        self.PMUSquareGen()
+        self.PMUSquareWaveGen()
         self.PMUInit()
         self.PMUExecute()
         self.PMUGetData()
