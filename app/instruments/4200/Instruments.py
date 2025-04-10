@@ -2474,6 +2474,24 @@ class Keithley4200:
         self.saveData()
         return
     
+    def PMUSquareWaveRun(self,Plot = True):
+        self.Plot = Plot
+        
+        self.dataInit()        
+        self.checkPath()
+        self.numSearch()        
+        self.fileName = f"{self.savepath}/{str(self.startNum).zfill(3)}_{self.lab}_{self.sample}_{self.cell}_{self.script}_PMU_{self.date}"
+
+        self.PMUSquareGen()
+        self.PMUInit()
+        self.PMUExecute()
+        self.PMUGetData()
+        self.PMUplot()
+        self.PlotSave()
+        self.saveData()
+        
+        return
+    
     
     
     
