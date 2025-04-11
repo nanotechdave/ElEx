@@ -1849,11 +1849,11 @@ class Keithley4200:
             voltage_single_seq.extend(segment_voltages)
         voltage_full_seq = np.tile(voltage_single_seq, int(self.pulses_number))
         
-        dT = np.mean(np.diff(self.data['Time[s]'][-10:]))
+        """ dT = np.mean(np.diff(self.data['Time[s]'][-10:]))
         num_steps = int(np.floor(self.SEGTIME_vector[0] / dT))
         # Generate linearly spaced voltages for this segment
         segment_voltages = np.linspace(self.STARTV_1_vector[0], self.STOPV_1_vector[0], num_steps)
-        voltage_full_seq = np.concatenate((voltage_full_seq,segment_voltages))
+        voltage_full_seq = np.concatenate((voltage_full_seq,segment_voltages)) """
 
         self.data['Voltage_prog[V]'] = voltage_full_seq
         self.data['Resistance[ohm]'] = self.data['Voltage_prog[V]']/self.data['Current[A]']
@@ -1996,7 +1996,7 @@ class Keithley4200:
         self.tInPulse = np.linspace(0, self.t_step_pulse*(self.ptNumPulse), self.ptNumPulse)  
         return
     
-    def PMUSquareWaveGen(self):
+    """ def PMUSquareWaveGen(self):
         self.v_high = self.v_bias_PMU + self.v_amp_PMU
         self.v_low = self.v_bias_PMU - self.v_amp_PMU
         self.SEGTIME_vector =  np.array([self.pulse_width if i % 2 == 0 else self.rising_time for i in range(self.seg_number)])
@@ -2011,15 +2011,6 @@ class Keithley4200:
         self.STARTV_2 = ", ".join(map(str, np.zeros(self.seg_number)))
         self.STOPV_2 = ", ".join(map(str, np.zeros(self.seg_number)))
 
-        """ self.SEGTIME_last = str(self.SEGTIME_vector[0])
-        self.STARTV_1_last = str(self.STARTV_1_vector[0])
-        self.STOPV_1_last = str(self.STOPV_1_vector[0])
-        self.MEASTYPE_last = str(2)
-        self.MEASSTART_last = str(0)
-        self.MEASSTOP_last = self.SEGTIME_last
-        self.STARTV_2_last = str(0)
-        self.STOPV_2_last = str(0)
- """
         self.SEGTIME_last = ", ".join(map(str, np.full(3, self.SEGTIME_vector[0]/3)))
         self.STARTV_1_last = ", ".join(map(str, np.full(3, self.STARTV_1_vector[0])))
         self.STOPV_1_last = ", ".join(map(str, np.full(3, self.STOPV_1_vector[0])))
@@ -2027,7 +2018,32 @@ class Keithley4200:
         self.MEASSTART_last = ", ".join(map(str, np.full(3, 0)))
         self.MEASSTOP_last = self.SEGTIME_last
         self.STARTV_2_last = ", ".join(map(str, np.full(3, 0)))
-        self.STOPV_2_last = ", ".join(map(str, np.full(3, 0)))
+        self.STOPV_2_last = ", ".join(map(str, np.full(3, 0))) """
+    
+    def PMUSquareWaveGen(self):
+        self.seg_number = 3
+        self.v_high = self.v_bias_PMU + self.v_amp_PMU
+        self.v_low = self.v_bias_PMU - self.v_amp_PMU
+        self.SEGTIME_vector =  np.array([self.pulse_width if i % 2 == 0 else self.rising_time for i in range(self.seg_number)])
+        self.SEGTIME = ", ".join(map(str,self.SEGTIME_vector))
+        self.STARTV_1_vector = np.array([self.v_low if (i // 2) % 2 == 0 else self.v_high for i in range(self.seg_number)])
+        self.STARTV_1 = ", ".join(map(str, self.STARTV_1_vector))
+        self.STOPV_1_vector = np.array([self.v_low if i % 3 == 0 else self.v_high for i in range(self.seg_number)])        
+        self.STOPV_1 = ", ".join(map(str, self.STOPV_1_vector))
+        self.MEASTYPE = ", ".join(map(str, np.full(self.seg_number, 2)))
+        self.MEASSTART = ", ".join(map(str, np.zeros(self.seg_number)))
+        self.MEASSTOP = self.SEGTIME
+        self.STARTV_2 = ", ".join(map(str, np.zeros(self.seg_number)))
+        self.STOPV_2 = ", ".join(map(str, np.zeros(self.seg_number)))
+
+        """ self.SEGTIME_last = ", ".join(map(str, np.full(3, self.SEGTIME_vector[0]/3)))
+        self.STARTV_1_last = ", ".join(map(str, np.full(3, self.STARTV_1_vector[0])))
+        self.STOPV_1_last = ", ".join(map(str, np.full(3, self.STOPV_1_vector[0])))
+        self.MEASTYPE_last = ", ".join(map(str, np.full(3, 2)))
+        self.MEASSTART_last = ", ".join(map(str, np.full(3, 0)))
+        self.MEASSTOP_last = self.SEGTIME_last
+        self.STARTV_2_last = ", ".join(map(str, np.full(3, 0)))
+        self.STOPV_2_last = ", ".join(map(str, np.full(3, 0))) """
 
 
         
@@ -2542,7 +2558,7 @@ class Keithley4200:
 
         self.PMUSquareWaveGen()
         self.PMUInit()  
-        self.PMUAddLastSequence()      
+        """ self.PMUAddLastSequence() """      
         self.PMUExecute()
         self.PMUGetData()
         self.PMUplot()
