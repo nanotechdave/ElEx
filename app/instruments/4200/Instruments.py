@@ -2002,7 +2002,7 @@ class Keithley4200:
         self.STARTV_2 = ", ".join(map(str, np.zeros(self.seg_number)))
         self.STOPV_2 = ", ".join(map(str, np.zeros(self.seg_number)))
 
-        self.SEGTIME_last = str(self.SEGTIME_vector[0])
+        """ self.SEGTIME_last = str(self.SEGTIME_vector[0])
         self.STARTV_1_last = str(self.STARTV_1_vector[0])
         self.STOPV_1_last = str(self.STOPV_1_vector[0])
         self.MEASTYPE_last = str(2)
@@ -2010,8 +2010,16 @@ class Keithley4200:
         self.MEASSTOP_last = self.SEGTIME_last
         self.STARTV_2_last = str(0)
         self.STOPV_2_last = str(0)
+ """
+        self.SEGTIME_last = ", ".join(map(str, np.full(3, self.SEGTIME_vector[0]/3)))
+        self.STARTV_1_last = ", ".join(map(str, np.full(3, self.STARTV_1_vector[0])))
+        self.STOPV_1_last = ", ".join(map(str, np.full(3, self.STOPV_1_vector[0])))
+        self.MEASTYPE_last = ", ".join(map(str, np.full(3, 2)))
+        self.MEASSTART_last = ", ".join(map(str, np.full(3, 0)))
+        self.MEASSTOP_last = self.SEGTIME_last
+        self.STARTV_2_last = ", ".join(map(str, np.full(3, 0)))
+        self.STOPV_2_last = ", ".join(map(str, np.full(3, 0)))
 
-        
 
         
 
@@ -2524,7 +2532,8 @@ class Keithley4200:
         self.fileName = f"{self.savepath}/{str(self.startNum).zfill(3)}_{self.lab}_{self.sample}_{self.cell}_{self.script}_PMU_{self.date}"
 
         self.PMUSquareWaveGen()
-        self.PMUInit()        
+        self.PMUInit()  
+        self.PMUAddLastSequence()      
         self.PMUExecute()
         self.PMUGetData()
         self.PMUplot()
