@@ -1838,7 +1838,10 @@ class Keithley4200:
         self.data[['Temperature[K]','TargetTemperature[K]']] = np.nan
         dT = np.mean(np.diff(self.data['Time[s]']))
         voltage_single_seq = []
-        for seg_time, start_v, stop_v in zip(self.SEGTIME_vector, self.STARTV_1_vector, self.STOPV_1_vector):
+        SEGTIME_vector_full = np.concatenate((self.SEGTIME_vector, self.SEGTIME_last))
+        STARTV_1_vector_full = np.concatenate((self.STARTV_1_vector, self.STARTV_1_last))
+        STOPV_1_vector_full = np.concatenate((self.STOPV_1_vector, self.STOPV_1_last))
+        for seg_time, start_v, stop_v in zip(SEGTIME_vector_full, STARTV_1_vector_full, STOPV_1_vector_full):
             # Determine the number of steps in this segment
             num_steps = int(np.floor(seg_time / dT))
             # Generate linearly spaced voltages for this segment
