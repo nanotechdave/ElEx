@@ -1836,7 +1836,7 @@ class Keithley4200:
         self.data['Voltage_read[V]'] = df_all_channels_1['Voltage'].astype(float)
         self.data['Current[A]'] = -df_all_channels_2['Current'].astype(float)
         self.data[['Temperature[K]','TargetTemperature[K]']] = np.nan
-        dT = np.mean(np.diff(self.data['Time[s]'][0:100]))
+        dT = np.mean(np.diff(self.data['Time[s]']))
         voltage_single_seq = []
         """ SEGTIME_vector_full = np.append(self.SEGTIME_vector, self.SEGTIME_vector[-1])
         STARTV_1_vector_full = np.append(self.STARTV_1_vector, self.STARTV_1_vector[-1])
@@ -2021,14 +2021,14 @@ class Keithley4200:
         self.STOPV_2_last = ", ".join(map(str, np.full(3, 0))) """
     
     def PMUSquareWaveGen(self):
-        self.seg_number = 3
+        self.seg_number = 5
         self.v_high = self.v_bias_PMU + self.v_amp_PMU
         self.v_low = self.v_bias_PMU - self.v_amp_PMU
-        self.SEGTIME_vector =  np.array([self.pulse_width if i % 2 == 0 else self.rising_time for i in range(self.seg_number)])
+        self.SEGTIME_vector =  np.array([self.rising_time/2,self.pulse_width,self.rising_time,self.pulse_width,self.rising_time/2])
         self.SEGTIME = ", ".join(map(str,self.SEGTIME_vector))
-        self.STARTV_1_vector = np.array([self.v_low if (i // 2) % 2 == 0 else self.v_high for i in range(self.seg_number)])
+        self.STARTV_1_vector = np.array([self.v_bias_PMU,self.v_high,self.v_high,self.v_low,self.v_low])
         self.STARTV_1 = ", ".join(map(str, self.STARTV_1_vector))
-        self.STOPV_1_vector = np.array([self.v_low if i % 3 == 0 else self.v_high for i in range(self.seg_number)])        
+        self.STOPV_1_vector = np.array([self.v_high,self.v_high,self.v_low,self.v_low,self.v_bias_PMU])       
         self.STOPV_1 = ", ".join(map(str, self.STOPV_1_vector))
         self.MEASTYPE = ", ".join(map(str, np.full(self.seg_number, 2)))
         self.MEASSTART = ", ".join(map(str, np.zeros(self.seg_number)))
