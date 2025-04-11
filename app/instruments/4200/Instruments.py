@@ -1764,8 +1764,17 @@ class Keithley4200:
     
     
     def dataInit(self):
-        self.data = pd.DataFrame(columns=['Time[s]','Voltage_prog[V]','Voltage_read[V]','Current[A]','Resistance[ohm]','Temperature[K]','TargetTemperature[K]','GNorm[G0]'])
-        return
+       self.data = pd.DataFrame({
+        'Time[s]': pd.Series(dtype='float'),
+        'Voltage_prog[V]': pd.Series(dtype='float'),
+        'Voltage_read[V]': pd.Series(dtype='float'),
+        'Current[A]': pd.Series(dtype='float'),
+        'Resistance[ohm]': pd.Series(dtype='float'),
+        'Temperature[K]': pd.Series(dtype='float'),
+        'TargetTemperature[K]': pd.Series(dtype='float'),
+        'GNorm[G0]': pd.Series(dtype='float')
+        })
+       return
     
     
     def printData(self,header = False):  
@@ -1838,12 +1847,12 @@ class Keithley4200:
         return
     
 
-    def PMUGetDataExtended(self):    
+    def PMUGetDataExtended(self, time_lapsed = 0):    
 
         if self.data.iloc[:, 0].isna().all():
             t0 = 0
         else:
-            t0 = self.data['Time[s]'].iloc[-1]
+            t0 = self.data['Time[s]'].iloc[-1] + time_lapsed
 
 
         data_points = int(self.query(":PMU:DATA:COUNT? 1"))
@@ -1864,11 +1873,11 @@ class Keithley4200:
         df_all_channels_2.reset_index(drop=True, inplace=True)
 
         data_dummy = pd.DataFrame(columns=['Time[s]','Voltage_prog[V]','Voltage_read[V]','Current[A]','Resistance[ohm]','Temperature[K]','TargetTemperature[K]','GNorm[G0]'])
-        data_dummy['Time[s]'] = df_all_channels_1['Timestamp'].astype(float) + t0
+        data_dummy['Time[s]'] = df_all_channels_1['Timestamp'].astype(float)
         data_dummy['Voltage_read[V]'] = df_all_channels_1['Voltage'].astype(float)
         data_dummy['Current[A]'] = -df_all_channels_2['Current'].astype(float)
         data_dummy[['Temperature[K]','TargetTemperature[K]']] = np.nan
-        dT = np.mean(np.diff(self.data['Time[s]']))
+        dT = np.mean(np.diff(data_dummy['Time[s]']))
         voltage_single_seq = []
         for seg_time, start_v, stop_v in zip(self.SEGTIME_vector, self.STARTV_1_vector, self.STOPV_1_vector):
             # Determine the number of steps in this segment
@@ -1877,10 +1886,10 @@ class Keithley4200:
             segment_voltages = np.linspace(start_v, stop_v, num_steps)
             voltage_single_seq.extend(segment_voltages)
         voltage_full_seq = np.tile(voltage_single_seq, int(self.pulses_number))
-
+        data_dummy['Time[s]'] = data_dummy['Time[s]'] + t0
         data_dummy['Voltage_prog[V]'] = voltage_full_seq
-        data_dummy['Resistance[ohm]'] = self.data['Voltage_prog[V]']/self.data['Current[A]']
-        data_dummy['GNorm[G0]'] = self.data['Current[A]']/(self.data['Voltage_prog[V]']*self.G0)
+        data_dummy['Resistance[ohm]'] = data_dummy['Voltage_prog[V]']/data_dummy['Current[A]']
+        data_dummy['GNorm[G0]'] = data_dummy['Current[A]']/(data_dummy['Voltage_prog[V]']*self.G0)
         
         self.data = pd.concat([self.data, data_dummy], ignore_index=True)
         return
@@ -2592,9 +2601,16 @@ class Keithley4200:
 
         self.PMUSquareWaveGen()
         self.PMUInit() 
-        for i in range(3):     
+        time_at_end = 0
+        for i in range(4):
+            time_lapsed = time.time()-time_at_end     
             self.PMUExecute()
-            self.PMUGetDataExtended()
+            time_at_end = time.time()
+            if i == 0:
+                self.PMUGetDataExtended()
+            else:
+                self.PMUGetDataExtended(time_lapsed)
+            
         self.PMUplot()
         self.PlotSave()
         self.saveData()

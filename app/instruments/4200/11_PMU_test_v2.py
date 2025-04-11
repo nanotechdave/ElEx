@@ -58,10 +58,10 @@ def main(args=None):
 # =============================================================================  
     
     for cNum in range(cycles):
-        try:              
-            KT4200.PMUSquareWaveRun() 
-        except:
-            print("Invalid parameters. Try reducing the number of periods.")           
+        # try:              
+            KT4200.PMUSquareWaveRecursiveRun() 
+        #except:
+         #   print("Invalid parameters. Try reducing the number of periods.")           
                 
     KT4200.closeSession()
     
