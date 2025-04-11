@@ -1836,7 +1836,7 @@ class Keithley4200:
         self.data['Voltage_read[V]'] = df_all_channels_1['Voltage'].astype(float)
         self.data['Current[A]'] = -df_all_channels_2['Current'].astype(float)
         self.data[['Temperature[K]','TargetTemperature[K]']] = np.nan
-        dT = np.mean(np.diff(self.data['Time[s]']))
+        dT = np.mean(np.diff(self.data['Time[s]'][0:100]))
         voltage_single_seq = []
         """ SEGTIME_vector_full = np.append(self.SEGTIME_vector, self.SEGTIME_vector[-1])
         STARTV_1_vector_full = np.append(self.STARTV_1_vector, self.STARTV_1_vector[-1])
@@ -1847,12 +1847,13 @@ class Keithley4200:
             # Generate linearly spaced voltages for this segment
             segment_voltages = np.linspace(start_v, stop_v, num_steps)
             voltage_single_seq.extend(segment_voltages)
-        voltage_full_seq = np.tile(voltage_single_seq, self.pulses_number)
+        voltage_full_seq = np.tile(voltage_single_seq, int(self.pulses_number))
         
+        dT = np.mean(np.diff(self.data['Time[s]'][-10:]))
         num_steps = int(np.floor(self.SEGTIME_vector[0] / dT))
         # Generate linearly spaced voltages for this segment
         segment_voltages = np.linspace(self.STARTV_1_vector[0], self.STOPV_1_vector[0], num_steps)
-        voltage_full_seq.extend(segment_voltages)
+        voltage_full_seq = np.concatenate((voltage_full_seq,segment_voltages))
 
         self.data['Voltage_prog[V]'] = voltage_full_seq
         self.data['Resistance[ohm]'] = self.data['Voltage_prog[V]']/self.data['Current[A]']
