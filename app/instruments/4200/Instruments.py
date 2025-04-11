@@ -1569,25 +1569,6 @@ class Keithley4200:
         self.session.query(f":PMU:SARB:WFM:SEQ:LIST {self.ch_source}, {self.last_sequence}, {self.pulses_number}") # define for each sequence how many times is in output
         self.session.query(f":PMU:SARB:WFM:SEQ:LIST {self.ch_ground}, {self.last_sequence}, {self.pulses_number}")
 
-    def PMUAddLastSequence(self):
-        self.last_sequence += 1
-
-        self.session.query(f":PMU:SARB:SEQ:TIME {self.ch_source}, {self.last_sequence}, {self.SEGTIME_last}") # defines time sequence, Channel, sequence number (1 to 512), comma separated array of time segments (20 ns resolution)
-        self.session.query(f":PMU:SARB:SEQ:STARTV {self.ch_source}, {self.last_sequence}, {self.STARTV_1_last}")
-        self.session.query(f":PMU:SARB:SEQ:STOPV {self.ch_source}, {self.last_sequence}, {self.STOPV_1_last}")
-        self.session.query(f":PMU:SARB:SEQ:MEAS:TYPE {self.ch_source}, {self.last_sequence}, {self.MEASTYPE_last}") # 0 = No measurement, 1 = Spot Mean (1 sample for seg), 2 = Waveform disrete (more samples for pulse) 
-        self.session.query(f":PMU:SARB:SEQ:MEAS:START {self.ch_source}, {self.last_sequence}, {self.MEASSTART_last}") # set delay for measurement after segment start (0 for measuring all)
-        self.session.query(f":PMU:SARB:SEQ:MEAS:STOP {self.ch_source}, {self.last_sequence}, {self.MEASSTOP_last}") # set time of end measuring for each segment (set equal to SEGTIME)
-
-        self.session.query(f":PMU:SARB:SEQ:TIME {self.ch_ground}, {self.last_sequence}, {self.SEGTIME_last}") #Use the same segment time as sequence 1 of channel 1 for sequence 1 of channel 2
-        self.session.query(f":PMU:SARB:SEQ:STARTV {self.ch_ground}, {self.last_sequence}, {self.STARTV_2_last}")
-        self.session.query(f":PMU:SARB:SEQ:STOPV {self.ch_ground}, {self.last_sequence}, {self.STOPV_2_last}") # set V all to 0?
-        self.session.query(f":PMU:SARB:SEQ:MEAS:TYPE {self.ch_ground}, {self.last_sequence}, {self.MEASTYPE_last}")
-        self.session.query(f":PMU:SARB:SEQ:MEAS:START {self.ch_ground}, {self.last_sequence}, {self.MEASSTART_last}")
-        self.session.query(f":PMU:SARB:SEQ:MEAS:STOP {self.ch_ground}, {self.last_sequence}, {self.MEASSTOP_last}")
-
-        self.session.query(f":PMU:SARB:WFM:SEQ:LIST:ADD {self.ch_source}, {self.last_sequence}, 1") # define for each sequence how many times is in output
-        self.session.query(f":PMU:SARB:WFM:SEQ:LIST:ADD {self.ch_ground}, {self.last_sequence}, 1")
 
 
 
@@ -1815,7 +1796,12 @@ class Keithley4200:
         self.saveData()       
         return
         
-    def PMUGetData(self):            
+    def PMUGetData(self):    
+        if self.data.iloc[:, 0].isna().all():
+            t0 = 0
+        else:
+            t0 = self.data['Time[s]'].iloc[-1]
+               
         data_points = int(self.query(":PMU:DATA:COUNT? 1"))
         df_all_channels_1 = pd.DataFrame(columns=['Voltage', 'Current', 'Timestamp', 'Status'])
         df_all_channels_2 = pd.DataFrame(columns=['Voltage', 'Current', 'Timestamp', 'Status'])
@@ -1838,9 +1824,6 @@ class Keithley4200:
         self.data[['Temperature[K]','TargetTemperature[K]']] = np.nan
         dT = np.mean(np.diff(self.data['Time[s]']))
         voltage_single_seq = []
-        """ SEGTIME_vector_full = np.append(self.SEGTIME_vector, self.SEGTIME_vector[-1])
-        STARTV_1_vector_full = np.append(self.STARTV_1_vector, self.STARTV_1_vector[-1])
-        STOPV_1_vector_full = np.append(self.STOPV_1_vector, self.STOPV_1_vector[-1]) """
         for seg_time, start_v, stop_v in zip(self.SEGTIME_vector, self.STARTV_1_vector, self.STOPV_1_vector):
             # Determine the number of steps in this segment
             num_steps = int(np.floor(seg_time / dT))
@@ -1848,17 +1831,58 @@ class Keithley4200:
             segment_voltages = np.linspace(start_v, stop_v, num_steps)
             voltage_single_seq.extend(segment_voltages)
         voltage_full_seq = np.tile(voltage_single_seq, int(self.pulses_number))
-        
-        """ dT = np.mean(np.diff(self.data['Time[s]'][-10:]))
-        num_steps = int(np.floor(self.SEGTIME_vector[0] / dT))
-        # Generate linearly spaced voltages for this segment
-        segment_voltages = np.linspace(self.STARTV_1_vector[0], self.STOPV_1_vector[0], num_steps)
-        voltage_full_seq = np.concatenate((voltage_full_seq,segment_voltages)) """
-
         self.data['Voltage_prog[V]'] = voltage_full_seq
         self.data['Resistance[ohm]'] = self.data['Voltage_prog[V]']/self.data['Current[A]']
         self.data['GNorm[G0]'] = self.data['Current[A]']/(self.data['Voltage_prog[V]']*self.G0)
         
+        return
+    
+
+    def PMUGetDataExtended(self):    
+
+        if self.data.iloc[:, 0].isna().all():
+            t0 = 0
+        else:
+            t0 = self.data['Time[s]'].iloc[-1]
+
+
+        data_points = int(self.query(":PMU:DATA:COUNT? 1"))
+        df_all_channels_1 = pd.DataFrame(columns=['Voltage', 'Current', 'Timestamp', 'Status'])
+        df_all_channels_2 = pd.DataFrame(columns=['Voltage', 'Current', 'Timestamp', 'Status'])
+        for start_point in range(0, data_points, 2048):            
+            response = self.query(f":PMU:DATA:GET {self.ch_source}, {start_point}, 2048")
+            coords = response.split(";")
+            coords2d = [value.split(",") for value in coords]
+            df_chunk = pd.DataFrame(coords2d, columns=['Voltage', 'Current', 'Timestamp', 'Status'])
+            df_all_channels_1 = pd.concat([df_all_channels_1, df_chunk])
+            response_2 = self.query(f":PMU:DATA:GET {self.ch_ground}, {start_point}, 2048")
+            coords_2 = response_2.split(";")
+            coords2d_2 = [value.split(",") for value in coords_2]
+            df_chunk_2 = pd.DataFrame(coords2d_2, columns=['Voltage', 'Current', 'Timestamp', 'Status'])
+            df_all_channels_2 = pd.concat([df_all_channels_2, df_chunk_2])
+        df_all_channels_1.reset_index(drop=True, inplace=True)
+        df_all_channels_2.reset_index(drop=True, inplace=True)
+
+        data_dummy = pd.DataFrame(columns=['Time[s]','Voltage_prog[V]','Voltage_read[V]','Current[A]','Resistance[ohm]','Temperature[K]','TargetTemperature[K]','GNorm[G0]'])
+        data_dummy['Time[s]'] = df_all_channels_1['Timestamp'].astype(float) + t0
+        data_dummy['Voltage_read[V]'] = df_all_channels_1['Voltage'].astype(float)
+        data_dummy['Current[A]'] = -df_all_channels_2['Current'].astype(float)
+        data_dummy[['Temperature[K]','TargetTemperature[K]']] = np.nan
+        dT = np.mean(np.diff(self.data['Time[s]']))
+        voltage_single_seq = []
+        for seg_time, start_v, stop_v in zip(self.SEGTIME_vector, self.STARTV_1_vector, self.STOPV_1_vector):
+            # Determine the number of steps in this segment
+            num_steps = int(np.floor(seg_time / dT))
+            # Generate linearly spaced voltages for this segment
+            segment_voltages = np.linspace(start_v, stop_v, num_steps)
+            voltage_single_seq.extend(segment_voltages)
+        voltage_full_seq = np.tile(voltage_single_seq, int(self.pulses_number))
+
+        data_dummy['Voltage_prog[V]'] = voltage_full_seq
+        data_dummy['Resistance[ohm]'] = self.data['Voltage_prog[V]']/self.data['Current[A]']
+        data_dummy['GNorm[G0]'] = self.data['Current[A]']/(self.data['Voltage_prog[V]']*self.G0)
+        
+        self.data = pd.concat([self.data, data_dummy], ignore_index=True)
         return
         
    
@@ -2036,14 +2060,6 @@ class Keithley4200:
         self.STARTV_2 = ", ".join(map(str, np.zeros(self.seg_number)))
         self.STOPV_2 = ", ".join(map(str, np.zeros(self.seg_number)))
 
-        """ self.SEGTIME_last = ", ".join(map(str, np.full(3, self.SEGTIME_vector[0]/3)))
-        self.STARTV_1_last = ", ".join(map(str, np.full(3, self.STARTV_1_vector[0])))
-        self.STOPV_1_last = ", ".join(map(str, np.full(3, self.STOPV_1_vector[0])))
-        self.MEASTYPE_last = ", ".join(map(str, np.full(3, 2)))
-        self.MEASSTART_last = ", ".join(map(str, np.full(3, 0)))
-        self.MEASSTOP_last = self.SEGTIME_last
-        self.STARTV_2_last = ", ".join(map(str, np.full(3, 0)))
-        self.STOPV_2_last = ", ".join(map(str, np.full(3, 0))) """
 
 
         
@@ -2557,10 +2573,28 @@ class Keithley4200:
         self.fileName = f"{self.savepath}/{str(self.startNum).zfill(3)}_{self.lab}_{self.sample}_{self.cell}_{self.script}_PMU_{self.date}"
 
         self.PMUSquareWaveGen()
-        self.PMUInit()  
-        """ self.PMUAddLastSequence() """      
+        self.PMUInit()      
         self.PMUExecute()
-        self.PMUGetData()
+        self.PMUGetDataExtended()
+        self.PMUplot()
+        self.PlotSave()
+        self.saveData()
+        
+        return
+    
+    def PMUSquareWaveRecursiveRun(self,Plot = True):
+        self.Plot = Plot
+        
+        self.dataInit()        
+        self.checkPath()
+        self.numSearch()        
+        self.fileName = f"{self.savepath}/{str(self.startNum).zfill(3)}_{self.lab}_{self.sample}_{self.cell}_{self.script}_PMU_{self.date}"
+
+        self.PMUSquareWaveGen()
+        self.PMUInit() 
+        for i in range(3):     
+            self.PMUExecute()
+            self.PMUGetDataExtended()
         self.PMUplot()
         self.PlotSave()
         self.saveData()
