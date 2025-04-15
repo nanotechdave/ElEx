@@ -1831,7 +1831,8 @@ class Keithley4200:
         self.data['Voltage_read[V]'] = df_all_channels_1['Voltage'].astype(float)
         self.data['Current[A]'] = -df_all_channels_2['Current'].astype(float)
         self.data[['Temperature[K]','TargetTemperature[K]']] = np.nan
-        dT = np.mean(np.diff(self.data['Time[s]']))
+
+        """ dT = np.mean(np.diff(self.data['Time[s]']))
         voltage_single_seq = []
         for seg_time, start_v, stop_v in zip(self.SEGTIME_vector, self.STARTV_1_vector, self.STOPV_1_vector):
             # Determine the number of steps in this segment
@@ -1839,7 +1840,38 @@ class Keithley4200:
             # Generate linearly spaced voltages for this segment
             segment_voltages = np.linspace(start_v, stop_v, num_steps)
             voltage_single_seq.extend(segment_voltages)
-        voltage_full_seq = np.tile(voltage_single_seq, int(self.pulses_number))
+        voltage_full_seq = np.tile(voltage_single_seq, int(self.pulses_number)) """
+
+        segment_start_times = np.cumsum(np.hstack(([0], self.SEGTIME_vector[:-1])))
+        segment_end_times = np.cumsum(self.SEGTIME_vector)
+
+        # Build time and voltage vectors for one sequence
+        time_seq = []
+        volt_seq = []
+
+        for start_t, dur, v_start, v_stop in zip(segment_start_times, self.SEGTIME_vector, self.STARTV_1_vector, self.STOPV_1_vector):
+            time_seq.extend([start_t, start_t + dur])
+            volt_seq.extend([v_start, v_stop])
+
+        time_seq = np.array(time_seq)
+        volt_seq = np.array(volt_seq)
+
+        # Repeat waveform for each pulse
+        waveform_duration = segment_end_times[-1]
+        time_full_seq = []
+        volt_full_seq = []
+
+        for i in range(self.pulses_number):
+            time_full_seq.extend(time_seq + i * waveform_duration)
+            volt_full_seq.extend(volt_seq)
+
+        time_full_seq = np.array(time_full_seq)
+        volt_full_seq = np.array(volt_full_seq)
+       
+
+        # Interpolate waveform at sample times
+        voltage_full_seq = np.interp(self.data['Time[s]'], time_full_seq, volt_full_seq)
+
         self.data['Voltage_prog[V]'] = voltage_full_seq
         self.data['Resistance[ohm]'] = self.data['Voltage_prog[V]']/self.data['Current[A]']
         self.data['GNorm[G0]'] = self.data['Current[A]']/(self.data['Voltage_prog[V]']*self.G0)
