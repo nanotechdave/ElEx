@@ -1,0 +1,1 @@
+Time[s] Voltage_prog[V] Voltage_read[V] Current[A] Resistance[ohm] Temperature[K] TargetTemperature[K] GNorm[G0]
