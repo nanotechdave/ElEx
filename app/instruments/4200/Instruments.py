@@ -1881,10 +1881,10 @@ class Keithley4200:
             self.data['GNorm[G0]'] = self.data['Current[A]']/(self.data['Voltage_prog[V]']*self.G0)
 
         # Get the sign of each value
-        signs = np.sign(self.data['Time[s]'])
+        signs = np.sign(self.data['Voltage_prog[V]'])
 
         # Find where the sign changes (zero crossings)
-        zero_crossings = signs.shift(1) * signs < 0
+        zero_crossings = (signs.shift(1) * signs) < 0
 
         # Get indices where zero crossing happens
         zc_indices = zero_crossings[zero_crossings].index
