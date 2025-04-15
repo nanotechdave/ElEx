@@ -17,24 +17,23 @@ def main(args=None):
 # =============================================================================  
   
     sample = "TestPMU"         # Sample name
-    cell = 'r10k'           # Measured cell
+    cell = 'r200k'           # Measured cell
     savepath = "TestPMU"       # Folder name (automatically created if not existing)
     lab = 'INRiM4200'       # Lab and instrument of measurement execution
     
     number_of_periods = 10    # Number of square wave periods
-    v_bias_PMU = 0      # Average voltage of square wave [V]
-    v_amp_PMU = 1       # Amplitude of the square wave centered in v_bias_PMU [V]
-    period = 2e-3      # Time period of the square wave [s]
-    rising_time = period/50     # Time required for the rising edge [s]. Modify it only if drops below the minimum limit of 40 nS
-    
+    v_amp_PMU = 1.5       # Amplitude of the square wave centered in v_bias_PMU [V]
+    period = 40e-3      # Time period of the square wave [s]
     
 
-    cycles = 1              # Number of measuring cycles
 
 # =============================================================================
 # #                       EXECUTION - OBJECT CREATION
-# =============================================================================  
-
+# ============================================================================= 
+    v_bias_PMU = 0      # Average voltage of square wave [V]
+    rising_time = period/50     # Time required for the rising edge [s]. Modify it only if drops below the minimum limit of 40 nS
+    
+    cycles = 1              # Number of measuring cycles
     plt.close('all')
     KT4200 = Keithley4200(address = "TCPIP0::10.60.5.103::1225::SOCKET")
     KT4200.InstInit()
@@ -58,10 +57,10 @@ def main(args=None):
 # =============================================================================  
     
     for cNum in range(cycles):
-        # try:              
+        #try:              
             KT4200.PMUSquareWaveRun() 
         #except:
-         #   print("Invalid parameters. Try reducing the number of periods.")           
+            #print("Invalid parameters. Try reducing the number of periods.")           
                 
     KT4200.closeSession()
     

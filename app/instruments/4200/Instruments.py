@@ -1861,7 +1861,7 @@ class Keithley4200:
         time_full_seq = []
         volt_full_seq = []
 
-        for i in range(self.pulses_number):
+        for i in range(int(self.pulses_number)):
             time_full_seq.extend(time_seq + i * waveform_duration)
             volt_full_seq.extend(volt_seq)
 
