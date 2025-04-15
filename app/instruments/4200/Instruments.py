@@ -1879,7 +1879,32 @@ class Keithley4200:
             self.data['GNorm[G0]'] = self.data['Current[A]']/(self.data['Voltage_read[V]']*self.G0)
         else:
             self.data['GNorm[G0]'] = self.data['Current[A]']/(self.data['Voltage_prog[V]']*self.G0)
-        
+
+        # Get the sign of each value
+        signs = np.sign(self.data['Time[s]'])
+
+        # Find where the sign changes (zero crossings)
+        zero_crossings = signs.shift(1) * signs < 0
+
+        # Get indices where zero crossing happens
+        zc_indices = zero_crossings[zero_crossings].index
+
+        # Optionally: Pick the index with value closest to zero around each crossing
+        closest_indices = []
+        for i in zc_indices:
+            prev_idx = i - 1
+            if prev_idx >= 0:
+                if abs(self.data.at[prev_idx, 'Time[s]']) < abs(self.data.at[i, 'Time[s]']):
+                    closest_indices.append(prev_idx)
+                else:
+                    closest_indices.append(i)
+            else:
+                closest_indices.append(i)
+
+        # Resulting indices of points closest to zero crossings
+        print("Closest to zero crossings at indices:", closest_indices)
+        self.data.loc[closest_indices, 'GNorm[G0]'] = np.nan
+
         return
     
 
