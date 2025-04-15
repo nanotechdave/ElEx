@@ -1835,7 +1835,7 @@ class Keithley4200:
         voltage_single_seq = []
         for seg_time, start_v, stop_v in zip(self.SEGTIME_vector, self.STARTV_1_vector, self.STOPV_1_vector):
             # Determine the number of steps in this segment
-            num_steps = int(np.floor(seg_time / dT))
+            num_steps = int(np.round(seg_time / dT))
             # Generate linearly spaced voltages for this segment
             segment_voltages = np.linspace(start_v, stop_v, num_steps)
             voltage_single_seq.extend(segment_voltages)
@@ -2584,7 +2584,7 @@ class Keithley4200:
         self.PMUSquareWaveGen()
         self.PMUInit()      
         self.PMUExecute()
-        self.PMUGetDataExtended()
+        self.PMUGetData()
         self.PMUplot()
         self.PlotSave()
         self.saveData()

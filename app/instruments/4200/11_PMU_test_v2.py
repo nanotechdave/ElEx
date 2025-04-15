@@ -21,10 +21,10 @@ def main(args=None):
     savepath = "TestPMU"       # Folder name (automatically created if not existing)
     lab = 'INRiM4200'       # Lab and instrument of measurement execution
     
-    number_of_periods = 10     # Number of square wave periods
+    number_of_periods = 1     # Number of square wave periods
     v_bias_PMU = 0      # Average voltage of square wave [V]
     v_amp_PMU = 1       # Amplitude of the square wave centered in v_bias_PMU [V]
-    period = 10e-6      # Time period of the square wave [s]
+    period = 20e-3      # Time period of the square wave [s]
     rising_time = period/50     # Time required for the rising edge [s]. Modify it only if drops below the minimum limit of 40 nS
     
     
@@ -59,7 +59,7 @@ def main(args=None):
     
     for cNum in range(cycles):
         # try:              
-            KT4200.PMUSquareWaveRecursiveRun() 
+            KT4200.PMUSquareWaveRun() 
         #except:
          #   print("Invalid parameters. Try reducing the number of periods.")           
                 
