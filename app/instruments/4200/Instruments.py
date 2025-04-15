@@ -1870,7 +1870,8 @@ class Keithley4200:
        
 
         # Interpolate waveform at sample times
-        voltage_full_seq = np.interp(self.data['Time[s]'], time_full_seq, volt_full_seq)
+        dT = np.mean(np.diff(self.data['Time[s]']))
+        voltage_full_seq = np.interp(self.data['Time[s]']+dT, time_full_seq, volt_full_seq)
 
         self.data['Voltage_prog[V]'] = voltage_full_seq
         self.data['Resistance[ohm]'] = self.data['Voltage_prog[V]']/self.data['Current[A]']
