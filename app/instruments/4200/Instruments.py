@@ -1805,7 +1805,7 @@ class Keithley4200:
         self.saveData()       
         return
         
-    def PMUGetData(self):    
+    def PMUGetData(self,v_read = False):    
         if self.data.iloc[:, 0].isna().all():
             t0 = 0
         else:
@@ -1875,7 +1875,10 @@ class Keithley4200:
 
         self.data['Voltage_prog[V]'] = voltage_full_seq
         self.data['Resistance[ohm]'] = self.data['Voltage_prog[V]']/self.data['Current[A]']
-        self.data['GNorm[G0]'] = self.data['Current[A]']/(self.data['Voltage_prog[V]']*self.G0)
+        if v_read:
+            self.data['GNorm[G0]'] = self.data['Current[A]']/(self.data['Voltage_read[V]']*self.G0)
+        else:
+            self.data['GNorm[G0]'] = self.data['Current[A]']/(self.data['Voltage_prog[V]']*self.G0)
         
         return
     
